@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  postgis:
+    image: postgis/postgis:15-3.3
+    container_name: safesteps-postgis
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123
+      POSTGRES_DB: safesteps
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgis_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - safesteps-network
+
+volumes:
+  postgis_data:
+    driver: local
+
+networks:
+  safesteps-network:
+    driver: bridge
