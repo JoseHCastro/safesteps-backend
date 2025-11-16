@@ -10,8 +10,15 @@ COPY package*.json ./
 # Install dependencies
 RUN npm install
 
+# Copy configuration files
+COPY tsconfig*.json ./
+COPY nest-cli.json ./
+
+# Copy source code
+COPY src ./src
+
 # Expose the application port
 EXPOSE 3000
 
 # Start the application in development mode with hot-reload
-CMD ["npm", "run", "start:dev"]
+CMD ["sh", "-c", "npm run build && npm run start:dev"]
