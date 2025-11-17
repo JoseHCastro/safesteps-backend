@@ -5,9 +5,11 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { UsuariosModule } from './usuarios/usuarios.module';
+import { NotificationsModule } from './notifications/notifications.module';
 import { User } from './auth/entities/user.entity';
 import { Tutor } from './usuarios/entities/tutor.entity';
 import { Hijo } from './usuarios/entities/hijo.entity';
+import { Notification } from './notifications/entities/notification.entity';
 
 @Module({
   imports: [
@@ -23,7 +25,7 @@ import { Hijo } from './usuarios/entities/hijo.entity';
         username: configService.get('DB_USERNAME'),
         password: configService.get('DB_PASSWORD'),
         database: configService.get('DB_NAME'),
-        entities: [User, Tutor, Hijo],
+        entities: [User, Tutor, Hijo, Notification],
         synchronize: configService.get('NODE_ENV') === 'development',
         logging: configService.get('NODE_ENV') === 'development',
       }),
@@ -31,6 +33,7 @@ import { Hijo } from './usuarios/entities/hijo.entity';
     }),
     AuthModule,
     UsuariosModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
