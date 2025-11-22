@@ -1,6 +1,6 @@
 import { IsEmail, IsString, MinLength, IsNotEmpty, IsOptional, IsNumber, Min, Max, IsInt } from 'class-validator';
 
-export class CreateHijoDto {
+export class RegisterHijoByTutorDto {
   @IsString()
   @IsNotEmpty({ message: 'El nombre es requerido' })
   @MinLength(3, { message: 'El nombre debe tener al menos 3 caracteres' })
@@ -29,15 +29,15 @@ export class CreateHijoDto {
   @IsInt({ message: 'El ID de la unidad educativa debe ser un número entero' })
   unidadEducativaId?: number;
 
+  @IsOptional()
   @IsNumber({}, { message: 'La latitud debe ser un número' })
   @Min(-90, { message: 'La latitud debe estar entre -90 y 90' })
   @Max(90, { message: 'La latitud debe estar entre -90 y 90' })
-  @IsOptional()
   latitud?: number;
 
+  @IsOptional()
   @IsNumber({}, { message: 'La longitud debe ser un número' })
   @Min(-180, { message: 'La longitud debe estar entre -180 y 180' })
   @Max(180, { message: 'La longitud debe estar entre -180 y 180' })
-  @IsOptional()
   longitud?: number;
 }
