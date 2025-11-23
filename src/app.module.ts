@@ -6,10 +6,12 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { UsuariosModule } from './usuarios/usuarios.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { UnidadesEducativasModule } from './unidades-educativas/unidades-educativas.module';
 import { User } from './auth/entities/user.entity';
 import { Tutor } from './usuarios/entities/tutor.entity';
 import { Hijo } from './usuarios/entities/hijo.entity';
 import { Notification } from './notifications/entities/notification.entity';
+import { UnidadEducativa } from './unidades-educativas/entities/unidad-educativa.entity';
 
 @Module({
   imports: [
@@ -25,7 +27,7 @@ import { Notification } from './notifications/entities/notification.entity';
         username: configService.get('DB_USERNAME'),
         password: configService.get('DB_PASSWORD'),
         database: configService.get('DB_NAME'),
-        entities: [User, Tutor, Hijo, Notification],
+        entities: [User, Tutor, Hijo, Notification, UnidadEducativa],
         synchronize: configService.get('NODE_ENV') === 'development',
         logging: configService.get('NODE_ENV') === 'development',
       }),
@@ -34,6 +36,7 @@ import { Notification } from './notifications/entities/notification.entity';
     AuthModule,
     UsuariosModule,
     NotificationsModule,
+    UnidadesEducativasModule,
   ],
   controllers: [AppController],
   providers: [AppService],

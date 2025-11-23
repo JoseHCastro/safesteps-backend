@@ -7,6 +7,7 @@ import { CreateHijoDto } from './dto/create-hijo.dto';
 import { UpdateHijoDto } from './dto/update-hijo.dto';
 import { UpdateLocationDto } from './dto/update-location.dto';
 import { User } from '../auth/entities/user.entity';
+import { UnidadEducativa } from '../unidades-educativas/entities/unidad-educativa.entity';
 
 @Injectable()
 export class HijoService {
@@ -15,6 +16,8 @@ export class HijoService {
     private hijoRepository: Repository<Hijo>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    @InjectRepository(UnidadEducativa)
+    private unidadEducativaRepository: Repository<UnidadEducativa>,
   ) {}
 
   async create(createHijoDto: CreateHijoDto): Promise<Hijo> {
@@ -25,6 +28,20 @@ export class HijoService {
 
     if (existingUser) {
       throw new ConflictException('El email ya está registrado');
+    }
+
+    // Validar unidad educativa si se proporciona
+    let unidadEducativa = null;
+    if (createHijoDto.unidadEducativaId) {
+      unidadEducativa = await this.unidadEducativaRepository.findOne({
+        where: { id: createHijoDto.unidadEducativaId },
+      });
+
+      if (!unidadEducativa) {
+        throw new NotFoundException(
+          `Unidad educativa con ID ${createHijoDto.unidadEducativaId} no encontrada`,
+        );
+      }
     }
 
     // Validar coordenadas si se proporcionan
@@ -39,8 +56,14 @@ export class HijoService {
     const hashedPassword = await bcrypt.hash(createHijoDto.password, 10);
     
     const hijo = this.hijoRepository.create({
-      ...createHijoDto,
+      nombre: createHijoDto.nombre,
+      apellido: createHijoDto.apellido,
+      email: createHijoDto.email,
       password: hashedPassword,
+      telefono: createHijoDto.telefono,
+      latitud: createHijoDto.latitud,
+      longitud: createHijoDto.longitud,
+      unidadEducativa: unidadEducativa,
       ultimaconexion: new Date(),
     });
 

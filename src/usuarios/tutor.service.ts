@@ -6,7 +6,9 @@ import { Tutor } from './entities/tutor.entity';
 import { Hijo } from './entities/hijo.entity';
 import { CreateTutorDto } from './dto/create-tutor.dto';
 import { UpdateTutorDto } from './dto/update-tutor.dto';
+import { RegisterHijoByTutorDto } from './dto/register-hijo-by-tutor.dto';
 import { User } from '../auth/entities/user.entity';
+import { UnidadEducativa } from '../unidades-educativas/entities/unidad-educativa.entity';
 
 @Injectable()
 export class TutorService {
@@ -17,6 +19,8 @@ export class TutorService {
     private hijoRepository: Repository<Hijo>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    @InjectRepository(UnidadEducativa)
+    private unidadEducativaRepository: Repository<UnidadEducativa>,
   ) {}
 
   async create(createTutorDto: CreateTutorDto): Promise<Tutor> {
@@ -148,5 +152,97 @@ export class TutorService {
 
     tutor.hijos = tutor.hijos.filter((hijo) => hijo.id !== hijoId);
     return this.tutorRepository.save(tutor);
+  }
+
+  /**
+   * Registra un nuevo hijo y lo vincula automáticamente al tutor autenticado
+   * @param tutorId - ID del tutor autenticado (obtenido del JWT)
+   * @param registerHijoDto - Datos del hijo a registrar
+   * @returns El tutor con el nuevo hijo vinculado
+   */
+  async registerHijoForAuthenticatedTutor(
+    tutorId: number,
+    registerHijoDto: RegisterHijoByTutorDto,
+  ): Promise<Hijo> {
+    // Verificar que el tutor existe
+    const tutor = await this.tutorRepository.findOne({
+      where: { id: tutorId },
+      relations: ['hijos'],
+    });
+
+    if (!tutor) {
+      throw new NotFoundException(`Tutor con ID ${tutorId} no encontrado`);
+    }
+
+    // Validar si el email ya existe
+    const existingUser = await this.userRepository.findOne({
+      where: { email: registerHijoDto.email },
+    });
+
+    if (existingUser) {
+      throw new ConflictException('El email ya está registrado');
+    }
+
+    // Validar unidad educativa si se proporciona
+    let unidadEducativa = null;
+    if (registerHijoDto.unidadEducativaId) {
+      unidadEducativa = await this.unidadEducativaRepository.findOne({
+        where: { id: registerHijoDto.unidadEducativaId },
+      });
+
+      if (!unidadEducativa) {
+        throw new NotFoundException(
+          `Unidad educativa con ID ${registerHijoDto.unidadEducativaId} no encontrada`,
+        );
+      }
+    }
+
+    // Validar coordenadas si se proporcionan
+    if (registerHijoDto.latitud !== undefined) {
+      if (registerHijoDto.latitud < -90 || registerHijoDto.latitud > 90) {
+        throw new BadRequestException('La latitud debe estar entre -90 y 90');
+      }
+    }
+
+    if (registerHijoDto.longitud !== undefined) {
+      if (registerHijoDto.longitud < -180 || registerHijoDto.longitud > 180) {
+        throw new BadRequestException('La longitud debe estar entre -180 y 180');
+      }
+    }
+
+    // Hash de la contraseña
+    const hashedPassword = await bcrypt.hash(registerHijoDto.password, 10);
+
+    // Crear el hijo
+    const hijo = this.hijoRepository.create({
+      nombre: registerHijoDto.nombre,
+      apellido: registerHijoDto.apellido,
+      email: registerHijoDto.email,
+      password: hashedPassword,
+      telefono: registerHijoDto.telefono,
+      latitud: registerHijoDto.latitud,
+      longitud: registerHijoDto.longitud,
+      unidadEducativa: unidadEducativa,
+      ultimaconexion: new Date(),
+    });
+
+    try {
+      // Guardar el hijo
+      const savedHijo = await this.hijoRepository.save(hijo);
+
+      // Vincular al tutor
+      if (!tutor.hijos) {
+        tutor.hijos = [];
+      }
+      tutor.hijos.push(savedHijo);
+      await this.tutorRepository.save(tutor);
+
+      return savedHijo;
+    } catch (error) {
+      if (error.code === '23505') {
+        throw new ConflictException('El email ya está registrado');
+      }
+      throw new BadRequestException('Error al registrar el hijo');
+    }
   }
 }
