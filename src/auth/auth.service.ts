@@ -16,7 +16,9 @@ export class AuthService {
     @InjectRepository(Tutor)
     private tutorRepository: Repository<Tutor>,
     private jwtService: JwtService,
-  ) {}
+  ) {
+    console.log('AuthService instantiated');
+  }
 
   async register(registerDto: RegisterDto) {
     // Validar si el email ya existe
@@ -85,5 +87,9 @@ export class AuthService {
 
   async validateUser(userId: number): Promise<User | null> {
     return this.userRepository.findOne({ where: { id: userId } });
+  }
+
+  async updateFcmToken(userId: number, fcmToken: string): Promise<void> {
+    await this.userRepository.update(userId, { fcmToken });
   }
 }

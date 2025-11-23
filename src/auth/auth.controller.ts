@@ -5,7 +5,9 @@ import { RegisterDto } from './dto/register.dto';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) {
+    console.log('AuthController instantiated');
+  }
 
   @Post('register')
   async register(@Body() registerDto: RegisterDto) {

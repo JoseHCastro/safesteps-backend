@@ -14,4 +14,7 @@ export class User {
 
   @Column({ length: 255, unique: true })
   email: string;
+
+  @Column({ type: 'text', nullable: true })
+  fcmToken?: string;
 }

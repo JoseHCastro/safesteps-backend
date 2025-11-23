@@ -6,6 +6,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { User } from './entities/user.entity';
 import { Tutor } from '../usuarios/entities/tutor.entity';
 import { AuthController } from './auth.controller';
+import { FcmTokenController } from './FcmTokenController';
 import { JwtStrategy } from './jwt.strategy';
 import { AuthService } from './auth.service';
 
@@ -22,7 +23,7 @@ import { AuthService } from './auth.service';
       inject: [ConfigService],
     }),
   ],
-  controllers: [AuthController],
+  controllers: [AuthController, FcmTokenController],
   providers: [AuthService, JwtStrategy],
   exports: [AuthService],
 })

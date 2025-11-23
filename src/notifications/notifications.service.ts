@@ -10,6 +10,7 @@ import { Notification } from './entities/notification.entity';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { QueryNotificationsDto } from './dto/query-notifications.dto';
 import { Tutor } from '../usuarios/entities/tutor.entity';
+import * as admin from 'firebase-admin';
 
 @Injectable()
 export class NotificationsService {
@@ -240,5 +241,50 @@ export class NotificationsService {
       .execute();
 
     return { deleted: result.affected || 0 };
+  }
+
+  /**
+   * Enviar notificación push via FCM
+   */
+  async sendPushNotification(
+    userId: number,
+    title: string,
+    body: string,
+    data: { type: string; childId?: number; [key: string]: any },
+  ): Promise<void> {
+    const tutor = await this.tutorRepository.findOne({
+      where: { id: userId },
+    });
+
+    if (!tutor || !tutor.fcmToken) {
+      console.log(`No FCM token for user ${userId}`);
+      return;
+    }
+
+    const message = {
+      notification: {
+        title,
+        body,
+      },
+      data: {
+        type: data.type,
+        childId: data.childId?.toString() || '',
+        ...Object.fromEntries(
+          Object.entries(data).map(([key, value]) => [key, String(value)])
+        ),
+      },
+      token: tutor.fcmToken,
+    };
+
+    try {
+      await admin.messaging().send(message);
+      console.log('Push notification sent successfully');
+    } catch (error) {
+      console.error('Error sending push notification:', error);
+      // Si el token es inválido, limpiarlo
+      if (error.code === 'messaging/registration-token-not-registered') {
+        await this.tutorRepository.update(userId, { fcmToken: null });
+      }
+    }
   }
 }
