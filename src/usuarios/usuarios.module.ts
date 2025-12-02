@@ -7,10 +7,9 @@ import { HijoService } from './hijo.service';
 import { Tutor } from './entities/tutor.entity';
 import { Hijo } from './entities/hijo.entity';
 import { User } from '../auth/entities/user.entity';
-import { UnidadEducativa } from '../unidades-educativas/entities/unidad-educativa.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Tutor, Hijo, User, UnidadEducativa])],
+  imports: [TypeOrmModule.forFeature([Tutor, Hijo, User])],
   controllers: [TutorController, HijoController],
   providers: [TutorService, HijoService],
   exports: [TutorService, HijoService],

@@ -6,12 +6,12 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { UsuariosModule } from './usuarios/usuarios.module';
 import { NotificationsModule } from './notifications/notifications.module';
-import { UnidadesEducativasModule } from './unidades-educativas/unidades-educativas.module';
 import { User } from './auth/entities/user.entity';
 import { Tutor } from './usuarios/entities/tutor.entity';
 import { Hijo } from './usuarios/entities/hijo.entity';
 import { Notification } from './notifications/entities/notification.entity';
-import { UnidadEducativa } from './unidades-educativas/entities/unidad-educativa.entity';
+import { ZonasSegurasModule } from './zonas-seguras/zonas-seguras.module';
+import { ZonaSegura } from './zonas-seguras/entities/zona-segura.entity';
 
 @Module({
   imports: [
@@ -27,7 +27,7 @@ import { UnidadEducativa } from './unidades-educativas/entities/unidad-educativa
         username: configService.get('DB_USERNAME'),
         password: configService.get('DB_PASSWORD'),
         database: configService.get('DB_NAME'),
-        entities: [User, Tutor, Hijo, Notification, UnidadEducativa],
+        entities: [User, Tutor, Hijo, Notification, ZonaSegura],
         synchronize: configService.get('NODE_ENV') === 'development',
         logging: configService.get('NODE_ENV') === 'development',
       }),
@@ -36,7 +36,7 @@ import { UnidadEducativa } from './unidades-educativas/entities/unidad-educativa
     AuthModule,
     UsuariosModule,
     NotificationsModule,
-    UnidadesEducativasModule,
+    ZonasSegurasModule,
   ],
   controllers: [AppController],
   providers: [AppService],

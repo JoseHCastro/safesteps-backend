@@ -1,9 +1,4 @@
-node_modules
-dist
-.git
-.gitignore
-.vscode
-README.md
-API_DOCS.md
+node_modules/
+dist/
+.env
 *.log
-npm-debug.log*
