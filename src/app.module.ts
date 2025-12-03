@@ -12,6 +12,7 @@ import { Hijo } from './usuarios/entities/hijo.entity';
 import { Notification } from './notifications/entities/notification.entity';
 import { ZonasSegurasModule } from './zonas-seguras/zonas-seguras.module';
 import { ZonaSegura } from './zonas-seguras/entities/zona-segura.entity';
+import { RegistrosModule } from './registros/registros.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { ZonaSegura } from './zonas-seguras/entities/zona-segura.entity';
     UsuariosModule,
     NotificationsModule,
     ZonasSegurasModule,
+    RegistrosModule,
   ],
   controllers: [AppController],
   providers: [AppService],
