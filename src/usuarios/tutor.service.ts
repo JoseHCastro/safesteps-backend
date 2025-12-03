@@ -8,7 +8,6 @@ import { CreateTutorDto } from './dto/create-tutor.dto';
 import { UpdateTutorDto } from './dto/update-tutor.dto';
 import { RegisterHijoByTutorDto } from './dto/register-hijo-by-tutor.dto';
 import { User } from '../auth/entities/user.entity';
-import { UnidadEducativa } from '../unidades-educativas/entities/unidad-educativa.entity';
 
 @Injectable()
 export class TutorService {
@@ -19,8 +18,6 @@ export class TutorService {
     private hijoRepository: Repository<Hijo>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
-    @InjectRepository(UnidadEducativa)
-    private unidadEducativaRepository: Repository<UnidadEducativa>,
   ) {}
 
   async create(createTutorDto: CreateTutorDto): Promise<Tutor> {
@@ -183,20 +180,6 @@ export class TutorService {
       throw new ConflictException('El email ya está registrado');
     }
 
-    // Validar unidad educativa si se proporciona
-    let unidadEducativa = null;
-    if (registerHijoDto.unidadEducativaId) {
-      unidadEducativa = await this.unidadEducativaRepository.findOne({
-        where: { id: registerHijoDto.unidadEducativaId },
-      });
-
-      if (!unidadEducativa) {
-        throw new NotFoundException(
-          `Unidad educativa con ID ${registerHijoDto.unidadEducativaId} no encontrada`,
-        );
-      }
-    }
-
     // Validar coordenadas si se proporcionan
     if (registerHijoDto.latitud !== undefined) {
       if (registerHijoDto.latitud < -90 || registerHijoDto.latitud > 90) {
@@ -222,7 +205,6 @@ export class TutorService {
       telefono: registerHijoDto.telefono,
       latitud: registerHijoDto.latitud,
       longitud: registerHijoDto.longitud,
-      unidadEducativa: unidadEducativa,
       ultimaconexion: new Date(),
     });
 

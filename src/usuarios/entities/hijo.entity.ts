@@ -1,7 +1,7 @@
-import { Entity, Column, ManyToMany, ManyToOne, ChildEntity } from 'typeorm';
+import { Entity, Column, ManyToMany, ChildEntity } from 'typeorm';
+import { ZonaSegura } from '../../zonas-seguras/entities/zona-segura.entity';
 import { User } from '../../auth/entities/user.entity';
 import { Tutor } from './tutor.entity';
-import { UnidadEducativa } from '../../unidades-educativas/entities/unidad-educativa.entity';
 
 @ChildEntity()
 export class Hijo extends User {
@@ -20,9 +20,10 @@ export class Hijo extends User {
   @Column({ type: 'timestamp', nullable: true })
   ultimaconexion: Date;
 
-  @ManyToOne(() => UnidadEducativa, (ue) => ue.estudiantes, { nullable: true })
-  unidadEducativa: UnidadEducativa;
+  @ManyToMany(() => ZonaSegura, (zona) => zona.hijos)
+  zonasSeguras: ZonaSegura[];
 
   @ManyToMany(() => Tutor, (tutor) => tutor.hijos)
   tutores: Tutor[];
+
 }

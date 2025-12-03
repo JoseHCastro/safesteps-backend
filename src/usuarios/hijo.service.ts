@@ -7,7 +7,6 @@ import { CreateHijoDto } from './dto/create-hijo.dto';
 import { UpdateHijoDto } from './dto/update-hijo.dto';
 import { UpdateLocationDto } from './dto/update-location.dto';
 import { User } from '../auth/entities/user.entity';
-import { UnidadEducativa } from '../unidades-educativas/entities/unidad-educativa.entity';
 
 @Injectable()
 export class HijoService {
@@ -16,8 +15,6 @@ export class HijoService {
     private hijoRepository: Repository<Hijo>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
-    @InjectRepository(UnidadEducativa)
-    private unidadEducativaRepository: Repository<UnidadEducativa>,
   ) {}
 
   async create(createHijoDto: CreateHijoDto): Promise<Hijo> {
@@ -30,20 +27,6 @@ export class HijoService {
       throw new ConflictException('El email ya está registrado');
     }
 
-    // Validar unidad educativa si se proporciona
-    let unidadEducativa = null;
-    if (createHijoDto.unidadEducativaId) {
-      unidadEducativa = await this.unidadEducativaRepository.findOne({
-        where: { id: createHijoDto.unidadEducativaId },
-      });
-
-      if (!unidadEducativa) {
-        throw new NotFoundException(
-          `Unidad educativa con ID ${createHijoDto.unidadEducativaId} no encontrada`,
-        );
-      }
-    }
-
     // Validar coordenadas si se proporcionan
     if (createHijoDto.latitud !== undefined && (createHijoDto.latitud < -90 || createHijoDto.latitud > 90)) {
       throw new BadRequestException('La latitud debe estar entre -90 y 90');
@@ -54,7 +37,7 @@ export class HijoService {
     }
 
     const hashedPassword = await bcrypt.hash(createHijoDto.password, 10);
-    
+
     const hijo = this.hijoRepository.create({
       nombre: createHijoDto.nombre,
       apellido: createHijoDto.apellido,
@@ -63,7 +46,6 @@ export class HijoService {
       telefono: createHijoDto.telefono,
       latitud: createHijoDto.latitud,
       longitud: createHijoDto.longitud,
-      unidadEducativa: unidadEducativa,
       ultimaconexion: new Date(),
     });
 
