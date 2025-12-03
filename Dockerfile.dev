@@ -10,6 +10,9 @@ COPY package*.json ./
 # Install dependencies
 RUN npm install
 
+# Remove old build
+RUN rm -rf dist
+
 # Copy configuration files
 COPY tsconfig*.json ./
 COPY nest-cli.json ./

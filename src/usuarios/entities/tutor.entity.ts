@@ -1,6 +1,7 @@
-import { Entity, Column, ManyToMany, JoinTable, ChildEntity } from 'typeorm';
+import { Entity, Column, ManyToMany, JoinTable, ChildEntity, OneToMany } from 'typeorm';
 import { User } from '../../auth/entities/user.entity';
 import { Hijo } from './hijo.entity';
+import { ZonaSegura } from 'src/zonas-seguras/entities/zona-segura.entity';
 
 @ChildEntity()
 export class Tutor extends User {
@@ -14,4 +15,6 @@ export class Tutor extends User {
     inverseJoinColumn: { name: 'hijo_id', referencedColumnName: 'id' },
   })
   hijos: Hijo[];
+  @OneToMany(() => ZonaSegura, (zona) => zona.tutor)
+  zonasSeguras: ZonaSegura[];
 }
