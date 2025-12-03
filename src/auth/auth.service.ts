@@ -74,13 +74,15 @@ export class AuthService {
       throw new UnauthorizedException('Credenciales inválidas');
     }
 
-    const payload = { email: user.email, sub: user.id };
+    // Incluir el campo tipo en el payload y la respuesta
+    const payload = { email: user.email, sub: user.id, tipo: user.tipo };
     return {
       access_token: this.jwtService.sign(payload),
       user: {
         id: user.id,
         nombre: user.nombre,
         email: user.email,
+        tipo: user.tipo,
       },
     };
   }
