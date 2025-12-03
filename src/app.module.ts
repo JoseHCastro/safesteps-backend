@@ -12,6 +12,7 @@ import { Tutor } from './usuarios/entities/tutor.entity';
 import { Hijo } from './usuarios/entities/hijo.entity';
 import { Notification } from './notifications/entities/notification.entity';
 import { UnidadEducativa } from './unidades-educativas/entities/unidad-educativa.entity';
+import { RegistrosModule } from './registros/registros.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { UnidadEducativa } from './unidades-educativas/entities/unidad-educativa
     UsuariosModule,
     NotificationsModule,
     UnidadesEducativasModule,
+    RegistrosModule,
   ],
   controllers: [AppController],
   providers: [AppService],
