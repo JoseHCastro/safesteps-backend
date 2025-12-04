@@ -31,4 +31,5 @@ export class Hijo extends User {
 
   @ManyToMany(() => Tutor, (tutor) => tutor.hijos)
   tutores: Tutor[];
+
 }

@@ -21,6 +21,79 @@
   <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
   [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
+## 🚀 Cómo ejecutar este backend (SafeSteps)
+
+### 1. Requisitos previos
+
+- Node.js 18+ y npm
+- Docker y Docker Compose (recomendado)
+
+### 2. Clonar el repositorio
+
+```bash
+# Clona el proyecto
+$ git clone <url-del-repo>
+$ cd safesteps-backend
+```
+
+### 3. Instalar dependencias
+
+```bash
+$ npm install
+```
+
+### 4. Ejecutar con Docker Compose (recomendado)
+
+Esto levanta la base de datos PostGIS y el backend conectados correctamente.
+
+```bash
+$ docker-compose up --build
+```
+
+- El backend estará disponible en: http://localhost:3000
+- La base de datos en: localhost:5433 (usuario: postgres, password: 123, db: safesteps)
+
+### 5. Ejecutar solo el backend localmente (sin Docker Compose)
+
+Asegúrate de tener una base de datos PostgreSQL/PostGIS corriendo y configura las variables de entorno en un archivo `.env`:
+
+```
+DB_HOST=localhost
+DB_PORT=5432
+DB_USERNAME=postgres
+DB_PASSWORD=123
+DB_NAME=safesteps
+PORT=3000
+JWT_SECRET=tu-clave-secreta
+```
+
+Luego ejecuta:
+
+```bash
+# Modo desarrollo (reinicio automático)
+$ npm run start:dev
+
+# Modo normal
+$ npm run start
+
+# Producción
+$ npm run start:prod
+```
+
+### 6. Endpoints principales
+
+- Autenticación: `/auth/login`, `/auth/register`
+- Usuarios: `/tutores`, `/hijos`
+- Notificaciones: `/notifications`
+- FCM Token: `PATCH /users/fcm-token` (requiere JWT)
+
+### 7. Notas
+
+- Si usas FCM, coloca tu archivo de credenciales en `src/config/service-account.json`.
+- El backend está listo para integrarse con Flutter o cualquier frontend.
+
+---
+
 ## Description
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.

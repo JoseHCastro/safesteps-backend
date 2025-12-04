@@ -17,4 +17,7 @@ export class User {
 
   @Column({ type: 'text', nullable: true })
   fcmToken?: string;
+
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  tipo?: string;
 }
