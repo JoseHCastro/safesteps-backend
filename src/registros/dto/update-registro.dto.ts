@@ -1,4 +1,4 @@
-import { IsDate, IsNumber, IsOptional } from 'class-validator';
+import { IsDate, IsNumber, IsOptional, IsArray, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class UpdateRegistroDto {
@@ -17,5 +17,8 @@ export class UpdateRegistroDto {
 }
 
 export class SyncRegistrosBatchDto {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => UpdateRegistroDto)
   registros: UpdateRegistroDto[];
 }

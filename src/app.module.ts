@@ -13,6 +13,7 @@ import { Notification } from './notifications/entities/notification.entity';
 import { ZonasSegurasModule } from './zonas-seguras/zonas-seguras.module';
 import { ZonaSegura } from './zonas-seguras/entities/zona-segura.entity';
 import { RegistrosModule } from './registros/registros.module';
+import { Registro } from './registros/entities/registro.entity';
 
 @Module({
   imports: [
@@ -28,7 +29,7 @@ import { RegistrosModule } from './registros/registros.module';
         username: configService.get('DB_USERNAME'),
         password: configService.get('DB_PASSWORD'),
         database: configService.get('DB_NAME'),
-        entities: [User, Tutor, Hijo, Notification, ZonaSegura],
+        entities: [User, Tutor, Hijo, Notification, ZonaSegura, Registro],
         synchronize: configService.get('NODE_ENV') === 'development',
         logging: configService.get('NODE_ENV') === 'development',
       }),
