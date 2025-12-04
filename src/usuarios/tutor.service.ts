@@ -70,6 +70,19 @@ export class TutorService {
     return tutor;
   }
 
+  async getHijos(id: number) {
+    const tutor = await this.tutorRepository.findOne({
+      where: { id },
+      relations: ['hijos'],
+    });
+
+    if (!tutor) {
+      throw new NotFoundException(`Tutor con ID ${id} no encontrado`);
+    }
+
+    return tutor.hijos;
+  }
+
   async update(id: number, updateTutorDto: UpdateTutorDto): Promise<Tutor> {
     const tutor = await this.findOne(id);
 
@@ -195,6 +208,7 @@ export class TutorService {
 
     // Hash de la contraseña
     const hashedPassword = await bcrypt.hash(registerHijoDto.password, 10);
+    const codigoVinculacion = this.generateVinculacionCode();
 
     // Crear el hijo
     const hijo = this.hijoRepository.create({
@@ -206,6 +220,8 @@ export class TutorService {
       latitud: registerHijoDto.latitud,
       longitud: registerHijoDto.longitud,
       ultimaconexion: new Date(),
+      codigoVinculacion,
+      vinculado: false,
     });
 
     try {
@@ -226,5 +242,17 @@ export class TutorService {
       }
       throw new BadRequestException('Error al registrar el hijo');
     }
+  }
+
+  /**
+   * Genera un código aleatorio de 6 caracteres alfanuméricos
+   */
+  private generateVinculacionCode(): string {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Sin caracteres ambiguos
+    let code = '';
+    for (let i = 0; i < 6; i++) {
+      code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return code;
   }
 }
