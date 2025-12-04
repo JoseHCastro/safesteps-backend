@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
@@ -37,6 +37,7 @@ export class HijoService {
     }
 
     const hashedPassword = await bcrypt.hash(createHijoDto.password, 10);
+    const codigoVinculacion = this.generateVinculacionCode();
 
     const hijo = this.hijoRepository.create({
       nombre: createHijoDto.nombre,
@@ -47,6 +48,8 @@ export class HijoService {
       latitud: createHijoDto.latitud,
       longitud: createHijoDto.longitud,
       ultimaconexion: new Date(),
+      codigoVinculacion,
+      vinculado: false,
     });
 
     try {
@@ -79,8 +82,14 @@ export class HijoService {
   async update(id: number, updateHijoDto: UpdateHijoDto): Promise<Hijo> {
     const hijo = await this.findOne(id);
 
-    // Validar si se intenta cambiar el email y ya existe
+    // Validar si se intenta cambiar el email
     if (updateHijoDto.email && updateHijoDto.email !== hijo.email) {
+      // No permitir cambio de email si ya está vinculado
+      if (hijo.vinculado) {
+        throw new ConflictException('No se puede cambiar el email de un hijo ya vinculado');
+      }
+
+      // Validar si el nuevo email ya existe
       const existingUser = await this.userRepository.findOne({
         where: { email: updateHijoDto.email },
       });
@@ -141,5 +150,87 @@ export class HijoService {
   async remove(id: number): Promise<void> {
     const hijo = await this.findOne(id);
     await this.hijoRepository.remove(hijo);
+  }
+
+  /**
+   * Genera un código aleatorio de 6 caracteres alfanuméricos
+   */
+  private generateVinculacionCode(): string {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Sin caracteres ambiguos
+    let code = '';
+    for (let i = 0; i < 6; i++) {
+      code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return code;
+  }
+
+  /**
+   * Vincular dispositivo del hijo usando código
+   */
+  async vincularConCodigo(codigo: string, email: string, password: string): Promise<Hijo> {
+    // Buscar hijo por código
+    const hijo = await this.hijoRepository.findOne({
+      where: { codigoVinculacion: codigo.toUpperCase() },
+      relations: ['tutores'],
+    });
+
+    if (!hijo) {
+      throw new NotFoundException('Código de vinculación inválido');
+    }
+
+    if (hijo.vinculado) {
+      throw new ConflictException('Este código ya ha sido utilizado');
+    }
+
+    // Actualizar email y password del hijo
+    hijo.email = email;
+    hijo.password = await bcrypt.hash(password, 10);
+    hijo.vinculado = true;
+
+    try {
+      return await this.hijoRepository.save(hijo);
+    } catch (error) {
+      if (error.code === '23505') {
+        throw new ConflictException('El email ya está registrado');
+      }
+      throw new BadRequestException('Error al vincular dispositivo');
+    }
+  }
+
+  /**
+   * Obtener hijo por código de vinculación (info básica, sin datos sensibles)
+   */
+  async findByCodigo(codigo: string): Promise<{ nombre: string; apellido: string; vinculado: boolean }> {
+    const hijo = await this.hijoRepository.findOne({
+      where: { codigoVinculacion: codigo.toUpperCase() },
+      select: ['nombre', 'apellido', 'vinculado'],
+    });
+
+    if (!hijo) {
+      throw new NotFoundException('Código de vinculación inválido');
+    }
+
+    return {
+      nombre: hijo.nombre,
+      apellido: hijo.apellido,
+      vinculado: hijo.vinculado,
+    };
+  }
+
+  /**
+   * Regenerar código de vinculación
+   */
+  async regenerarCodigo(id: number): Promise<{ codigoVinculacion: string }> {
+    const hijo = await this.findOne(id);
+
+    if (hijo.vinculado) {
+      throw new ConflictException('No se puede regenerar el código de un hijo ya vinculado');
+    }
+
+    hijo.codigoVinculacion = this.generateVinculacionCode();
+
+    await this.hijoRepository.save(hijo);
+
+    return { codigoVinculacion: hijo.codigoVinculacion };
   }
 }

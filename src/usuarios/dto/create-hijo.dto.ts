@@ -25,10 +25,6 @@ export class CreateHijoDto {
   @MinLength(7, { message: 'El teléfono debe tener al menos 7 caracteres' })
   telefono?: string;
 
-  @IsOptional()
-  @IsInt({ message: 'El ID de la unidad educativa debe ser un número entero' })
-  unidadEducativaId?: number;
-
   @IsNumber({}, { message: 'La latitud debe ser un número' })
   @Min(-90, { message: 'La latitud debe estar entre -90 y 90' })
   @Max(90, { message: 'La latitud debe estar entre -90 y 90' })

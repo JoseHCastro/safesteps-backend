@@ -26,6 +26,31 @@ export class TutorController {
     return this.tutorService.create(createTutorDto);
   }
 
+  /**
+   * Alias de me/hijos - Registra un nuevo hijo para el tutor autenticado
+   */
+  @Post('registrar-hijo')
+  registrarHijo(
+    @GetUser() user: User,
+    @Body() registerHijoDto: RegisterHijoByTutorDto,
+  ) {
+    return this.tutorService.registerHijoForAuthenticatedTutor(user.id, registerHijoDto);
+  }
+
+  /**
+   * Registra un nuevo hijo para el tutor autenticado
+   * El tutor se obtiene automáticamente del JWT
+   * @param user - Usuario autenticado (extraído del JWT)
+   * @param registerHijoDto - Datos del hijo a registrar
+   */
+  @Post('me/hijos')
+  registerHijo(
+    @GetUser() user: User,
+    @Body() registerHijoDto: RegisterHijoByTutorDto,
+  ) {
+    return this.tutorService.registerHijoForAuthenticatedTutor(user.id, registerHijoDto);
+  }
+
   @Get()
   findAll() {
     return this.tutorService.findAll();
@@ -34,6 +59,11 @@ export class TutorController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.tutorService.findOne(+id);
+  }
+
+  @Get(':id/hijos')
+  getHijos(@Param('id') id: string) {
+    return this.tutorService.getHijos(+id);
   }
 
   @Patch(':id')
@@ -54,19 +84,5 @@ export class TutorController {
   @Delete(':tutorId/hijos/:hijoId')
   removeHijo(@Param('tutorId') tutorId: string, @Param('hijoId') hijoId: string) {
     return this.tutorService.removeHijo(+tutorId, +hijoId);
-  }
-
-  /**
-   * Registra un nuevo hijo para el tutor autenticado
-   * El tutor se obtiene automáticamente del JWT
-   * @param user - Usuario autenticado (extraído del JWT)
-   * @param registerHijoDto - Datos del hijo a registrar
-   */
-  @Post('me/hijos')
-  registerHijo(
-    @GetUser() user: User,
-    @Body() registerHijoDto: RegisterHijoByTutorDto,
-  ) {
-    return this.tutorService.registerHijoForAuthenticatedTutor(user.id, registerHijoDto);
   }
 }
