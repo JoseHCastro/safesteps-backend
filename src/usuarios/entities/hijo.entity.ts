@@ -20,6 +20,12 @@ export class Hijo extends User {
   @Column({ type: 'timestamp', nullable: true })
   ultimaconexion: Date;
 
+  @Column({ length: 10, unique: true, nullable: true })
+  codigoVinculacion: string;
+
+  @Column({ type: 'boolean', default: false })
+  vinculado: boolean;
+
   @ManyToMany(() => ZonaSegura, (zona) => zona.hijos)
   zonasSeguras: ZonaSegura[];
 

@@ -6,22 +6,25 @@ export class Registro {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'timestamp' })
+  @Column('timestamp', { name: 'hora' })
   hora: Date;
 
-  @Column({ type: 'float' })
+  @Column('float', { name: 'latitud' })
   latitud: number;
 
-  @Column({ type: 'float' })
+  @Column('float', { name: 'longitud' })
   longitud: number;
 
-  @ManyToOne(() => Hijo, hijo => hijo.id) 
+  @ManyToOne(() => Hijo, hijo => hijo.id)
   @JoinColumn({ name: 'hijoId' })
   hijo: Hijo;
 
-  @Column()
+  @Column({ name: 'hijoId' })
   hijoId: number;
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @Column('timestamp', { 
+    name: 'creadoEn',
+    default: () => 'CURRENT_TIMESTAMP' 
+  })
   creadoEn: Date;
 }
