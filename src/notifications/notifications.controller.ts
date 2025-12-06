@@ -17,11 +17,7 @@ import { QueryNotificationsDto } from './dto/query-notifications.dto';
 import { MarkReadDto } from './dto/mark-read.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { GetUser } from '../common/decorators/get-user.decorator';
-
-interface JwtPayload {
-  sub: number;
-  email: string;
-}
+import { User } from '../auth/entities/user.entity';
 
 @Controller('notifications')
 @UseGuards(JwtAuthGuard)
@@ -35,10 +31,10 @@ export class NotificationsController {
    */
   @Get()
   async findAll(
-    @GetUser() user: JwtPayload,
+    @GetUser() user: User,
     @Query() queryDto: QueryNotificationsDto,
   ) {
-    return this.notificationsService.findAllByTutor(user.sub, queryDto);
+    return this.notificationsService.findAllByTutor(user.id, queryDto);
   }
 
   /**
@@ -46,8 +42,8 @@ export class NotificationsController {
    * GET /notifications/unread/count
    */
   @Get('unread/count')
-  async getUnreadCount(@GetUser() user: JwtPayload) {
-    return this.notificationsService.getUnreadCount(user.sub);
+  async getUnreadCount(@GetUser() user: User) {
+    return this.notificationsService.getUnreadCount(user.id);
   }
 
   /**
@@ -57,9 +53,9 @@ export class NotificationsController {
   @Get(':id')
   async findOne(
     @Param('id', ParseIntPipe) id: number,
-    @GetUser() user: JwtPayload,
+    @GetUser() user: User,
   ) {
-    return this.notificationsService.findOne(id, user.sub);
+    return this.notificationsService.findOne(id, user.id);
   }
 
   /**
@@ -69,10 +65,10 @@ export class NotificationsController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async create(
-    @GetUser() user: JwtPayload,
+    @GetUser() user: User,
     @Body() createNotificationDto: CreateNotificationDto,
   ) {
-    return this.notificationsService.create(user.sub, createNotificationDto);
+    return this.notificationsService.create(user.id, createNotificationDto);
   }
 
   /**
@@ -83,12 +79,12 @@ export class NotificationsController {
   @Post('mark-read')
   @HttpCode(HttpStatus.OK)
   async markAsRead(
-    @GetUser() user: JwtPayload,
+    @GetUser() user: User,
     @Body() markReadDto: MarkReadDto,
   ) {
     return this.notificationsService.markAsRead(
       markReadDto.notificationIds,
-      user.sub,
+      user.id,
     );
   }
 
@@ -98,8 +94,8 @@ export class NotificationsController {
    */
   @Post('mark-all-read')
   @HttpCode(HttpStatus.OK)
-  async markAllAsRead(@GetUser() user: JwtPayload) {
-    return this.notificationsService.markAllAsRead(user.sub);
+  async markAllAsRead(@GetUser() user: User) {
+    return this.notificationsService.markAllAsRead(user.id);
   }
 
   /**
@@ -110,9 +106,9 @@ export class NotificationsController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(
     @Param('id', ParseIntPipe) id: number,
-    @GetUser() user: JwtPayload,
+    @GetUser() user: User,
   ) {
-    await this.notificationsService.remove(id, user.sub);
+    await this.notificationsService.remove(id, user.id);
   }
 
   /**
@@ -123,12 +119,12 @@ export class NotificationsController {
   @Delete()
   @HttpCode(HttpStatus.OK)
   async removeMany(
-    @GetUser() user: JwtPayload,
+    @GetUser() user: User,
     @Body() markReadDto: MarkReadDto,
   ) {
     return this.notificationsService.removeMany(
       markReadDto.notificationIds,
-      user.sub,
+      user.id,
     );
   }
 }
