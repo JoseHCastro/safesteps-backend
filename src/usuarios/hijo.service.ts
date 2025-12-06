@@ -33,15 +33,6 @@ export class HijoService {
       throw new ConflictException('El email ya está registrado');
     }
 
-    // Validar coordenadas si se proporcionan
-    if (createHijoDto.latitud !== undefined && (createHijoDto.latitud < -90 || createHijoDto.latitud > 90)) {
-      throw new BadRequestException('La latitud debe estar entre -90 y 90');
-    }
-
-    if (createHijoDto.longitud !== undefined && (createHijoDto.longitud < -180 || createHijoDto.longitud > 180)) {
-      throw new BadRequestException('La longitud debe estar entre -180 y 180');
-    }
-
     const hashedPassword = await bcrypt.hash(createHijoDto.password, 10);
     const codigoVinculacion = this.generateVinculacionCode();
 
@@ -51,8 +42,6 @@ export class HijoService {
       email: createHijoDto.email,
       password: hashedPassword,
       telefono: createHijoDto.telefono,
-      latitud: createHijoDto.latitud,
-      longitud: createHijoDto.longitud,
       ultimaconexion: new Date(),
       codigoVinculacion,
       vinculado: false,
@@ -103,15 +92,6 @@ export class HijoService {
       if (existingUser) {
         throw new ConflictException('El email ya está registrado');
       }
-    }
-
-    // Validar coordenadas si se proporcionan
-    if (updateHijoDto.latitud !== undefined && (updateHijoDto.latitud < -90 || updateHijoDto.latitud > 90)) {
-      throw new BadRequestException('La latitud debe estar entre -90 y 90');
-    }
-
-    if (updateHijoDto.longitud !== undefined && (updateHijoDto.longitud < -180 || updateHijoDto.longitud > 180)) {
-      throw new BadRequestException('La longitud debe estar entre -180 y 180');
     }
 
     if (updateHijoDto.password) {
@@ -273,15 +253,20 @@ export class HijoService {
 
   /**
    * Regenerar código de vinculación
+   * Permite al tutor regenerar el código si el hijo pierde su dispositivo
    */
-  async regenerarCodigo(id: number): Promise<{ codigoVinculacion: string }> {
+  async regenerarCodigo(id: number, tutorId: number): Promise<{ codigoVinculacion: string }> {
     const hijo = await this.findOne(id);
 
-    if (hijo.vinculado) {
-      throw new ConflictException('No se puede regenerar el código de un hijo ya vinculado');
+    // Verificar que el tutor sea el dueño del hijo
+    const esTutorDelHijo = hijo.tutores.some(tutor => tutor.id === tutorId);
+    if (!esTutorDelHijo) {
+      throw new UnauthorizedException('No tienes permisos para regenerar el código de este hijo');
     }
 
+    // Generar nuevo código y resetear vinculado
     hijo.codigoVinculacion = this.generateVinculacionCode();
+    hijo.vinculado = false; // Permitir nueva vinculación
 
     await this.hijoRepository.save(hijo);
 

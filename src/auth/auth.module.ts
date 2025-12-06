@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { User } from './entities/user.entity';
 import { Tutor } from '../usuarios/entities/tutor.entity';
+import { Hijo } from '../usuarios/entities/hijo.entity';
 import { AuthController } from './auth.controller';
 import { FcmTokenController } from './FcmTokenController';
 import { JwtStrategy } from './jwt.strategy';
@@ -12,7 +13,7 @@ import { AuthService } from './auth.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Tutor]),
+    TypeOrmModule.forFeature([User, Tutor, Hijo]),
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
