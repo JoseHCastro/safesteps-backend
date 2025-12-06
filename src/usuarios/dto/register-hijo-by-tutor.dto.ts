@@ -24,16 +24,4 @@ export class RegisterHijoByTutorDto {
   @IsString()
   @MinLength(7, { message: 'El teléfono debe tener al menos 7 caracteres' })
   telefono?: string;
-
-  @IsOptional()
-  @IsNumber({}, { message: 'La latitud debe ser un número' })
-  @Min(-90, { message: 'La latitud debe estar entre -90 y 90' })
-  @Max(90, { message: 'La latitud debe estar entre -90 y 90' })
-  latitud?: number;
-
-  @IsOptional()
-  @IsNumber({}, { message: 'La longitud debe ser un número' })
-  @Min(-180, { message: 'La longitud debe estar entre -180 y 180' })
-  @Max(180, { message: 'La longitud debe estar entre -180 y 180' })
-  longitud?: number;
 }

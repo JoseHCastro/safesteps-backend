@@ -80,7 +80,11 @@ export class TutorService {
       throw new NotFoundException(`Tutor con ID ${id} no encontrado`);
     }
 
-    return tutor.hijos;
+    // Excluir password de la respuesta y asegurar que se incluya codigoVinculacion
+    return tutor.hijos.map(hijo => {
+      const { password, ...hijoSinPassword } = hijo as any;
+      return hijoSinPassword;
+    });
   }
 
   async update(id: number, updateTutorDto: UpdateTutorDto): Promise<Tutor> {
@@ -193,19 +197,6 @@ export class TutorService {
       throw new ConflictException('El email ya está registrado');
     }
 
-    // Validar coordenadas si se proporcionan
-    if (registerHijoDto.latitud !== undefined) {
-      if (registerHijoDto.latitud < -90 || registerHijoDto.latitud > 90) {
-        throw new BadRequestException('La latitud debe estar entre -90 y 90');
-      }
-    }
-
-    if (registerHijoDto.longitud !== undefined) {
-      if (registerHijoDto.longitud < -180 || registerHijoDto.longitud > 180) {
-        throw new BadRequestException('La longitud debe estar entre -180 y 180');
-      }
-    }
-
     // Hash de la contraseña
     const hashedPassword = await bcrypt.hash(registerHijoDto.password, 10);
     const codigoVinculacion = this.generateVinculacionCode();
@@ -217,8 +208,6 @@ export class TutorService {
       email: registerHijoDto.email,
       password: hashedPassword,
       telefono: registerHijoDto.telefono,
-      latitud: registerHijoDto.latitud,
-      longitud: registerHijoDto.longitud,
       ultimaconexion: new Date(),
       codigoVinculacion,
       vinculado: false,
@@ -235,7 +224,9 @@ export class TutorService {
       tutor.hijos.push(savedHijo);
       await this.tutorRepository.save(tutor);
 
-      return savedHijo;
+      // Excluir password de la respuesta
+      const { password: pwd, ...hijoSinPassword } = savedHijo as any;
+      return hijoSinPassword;
     } catch (error) {
       if (error.code === '23505') {
         throw new ConflictException('El email ya está registrado');

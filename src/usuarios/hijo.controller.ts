@@ -14,6 +14,7 @@ import { CreateHijoDto } from './dto/create-hijo.dto';
 import { UpdateHijoDto } from './dto/update-hijo.dto';
 import { UpdateLocationDto } from './dto/update-location.dto';
 import { VincularCodigoDto } from './dto/vincular-codigo.dto';
+import { GetUser } from '../common/decorators/get-user.decorator';
 
 @Controller('hijos')
 export class HijoController {
@@ -79,10 +80,11 @@ export class HijoController {
 
   /**
    * Regenerar código de vinculación
+   * Solo el tutor dueño del hijo puede regenerar el código
    */
   @Post(':id/regenerar-codigo')
   @UseGuards(JwtAuthGuard)
-  regenerarCodigo(@Param('id') id: string) {
-    return this.hijoService.regenerarCodigo(+id);
+  regenerarCodigo(@Param('id') id: string, @GetUser() user: any) {
+    return this.hijoService.regenerarCodigo(+id, user.id);
   }
 }

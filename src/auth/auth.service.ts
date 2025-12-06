@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { User } from './entities/user.entity';
 import { Tutor } from '../usuarios/entities/tutor.entity';
+import { Hijo } from '../usuarios/entities/hijo.entity';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 
@@ -15,6 +16,8 @@ export class AuthService {
     private userRepository: Repository<User>,
     @InjectRepository(Tutor)
     private tutorRepository: Repository<Tutor>,
+    @InjectRepository(Hijo)
+    private hijoRepository: Repository<Hijo>,
     private jwtService: JwtService,
   ) {
     console.log('AuthService instantiated');
@@ -93,5 +96,39 @@ export class AuthService {
 
   async updateFcmToken(userId: number, fcmToken: string): Promise<void> {
     await this.userRepository.update(userId, { fcmToken });
+  }
+
+  /**
+   * Login con código de vinculación (para hijos)
+   */
+  async loginConCodigo(codigo: string) {
+    const hijo = await this.hijoRepository.findOne({
+      where: { codigoVinculacion: codigo.toUpperCase() },
+      relations: ['tutores'],
+    });
+
+    if (!hijo) {
+      throw new UnauthorizedException('Código de vinculación inválido');
+    }
+
+    // Marcar como vinculado en el primer login
+    if (!hijo.vinculado) {
+      hijo.vinculado = true;
+      await this.hijoRepository.save(hijo);
+    }
+
+    const payload = { email: hijo.email, sub: hijo.id, tipo: 'hijo' };
+    return {
+      access_token: this.jwtService.sign(payload),
+      user: {
+        id: hijo.id,
+        nombre: hijo.nombre,
+        apellido: hijo.apellido,
+        email: hijo.email,
+        telefono: hijo.telefono,
+        vinculado: hijo.vinculado,
+        tipo: 'hijo',
+      },
+    };
   }
 }
