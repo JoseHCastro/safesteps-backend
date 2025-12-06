@@ -51,6 +51,15 @@ export class TutorController {
     return this.tutorService.registerHijoForAuthenticatedTutor(user.id, registerHijoDto);
   }
 
+  /**
+   * Obtiene los hijos del tutor autenticado
+   * El tutor se obtiene automáticamente del JWT
+   */
+  @Get('me/hijos')
+  getMyHijos(@GetUser() user: User) {
+    return this.tutorService.getHijos(user.id);
+  }
+
   @Get()
   findAll() {
     return this.tutorService.findAll();
