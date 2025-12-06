@@ -11,15 +11,6 @@ export class RegisterHijoByTutorDto {
   @MinLength(2, { message: 'El apellido debe tener al menos 2 caracteres' })
   apellido?: string;
 
-  @IsEmail({}, { message: 'El email debe ser válido' })
-  @IsNotEmpty({ message: 'El email es requerido' })
-  email: string;
-
-  @IsString()
-  @IsNotEmpty({ message: 'La contraseña es requerida' })
-  @MinLength(6, { message: 'La contraseña debe tener al menos 6 caracteres' })
-  password: string;
-
   @IsOptional()
   @IsString()
   @MinLength(7, { message: 'El teléfono debe tener al menos 7 caracteres' })

@@ -9,10 +9,10 @@ export class User {
   @Column({ length: 255 })
   nombre: string;
 
-  @Column({ length: 255 })
+  @Column({ length: 255, nullable: true })
   password: string;
 
-  @Column({ length: 255, unique: true })
+  @Column({ length: 255, unique: true, nullable: true })
   email: string;
 
   @Column({ type: 'text', nullable: true })

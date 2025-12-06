@@ -171,8 +171,13 @@ export class TutorService {
   /**
    * Registra un nuevo hijo y lo vincula automáticamente al tutor autenticado
    * @param tutorId - ID del tutor autenticado (obtenido del JWT)
-   * @param registerHijoDto - Datos del hijo a registrar
-   * @returns El tutor con el nuevo hijo vinculado
+   * @param registerHijoDto - Datos del hijo a registrar (solo nombre, apellido, teléfono)
+   * @returns El hijo registrado con código de vinculación
+   * 
+   * NOTA: No se requiere email ni password. Se generan automáticamente:
+   * - Email temporal: hijo_{codigo}@safesteps.temp
+   * - Password temporal: Se genera automáticamente
+   * El hijo usará solo el código de vinculación para hacer login
    */
   async registerHijoForAuthenticatedTutor(
     tutorId: number,
@@ -188,24 +193,20 @@ export class TutorService {
       throw new NotFoundException(`Tutor con ID ${tutorId} no encontrado`);
     }
 
-    // Validar si el email ya existe
-    const existingUser = await this.userRepository.findOne({
-      where: { email: registerHijoDto.email },
-    });
-
-    if (existingUser) {
-      throw new ConflictException('El email ya está registrado');
-    }
-
-    // Hash de la contraseña
-    const hashedPassword = await bcrypt.hash(registerHijoDto.password, 10);
+    // Generar código de vinculación PRIMERO (necesario para email temporal)
     const codigoVinculacion = this.generateVinculacionCode();
+
+    // Generar email y password temporales
+    // El hijo NO usará estos datos, solo el código de vinculación
+    const emailTemporal = `hijo_${codigoVinculacion.toLowerCase()}@safesteps.temp`;
+    const passwordTemporal = this.generateRandomPassword();
+    const hashedPassword = await bcrypt.hash(passwordTemporal, 10);
 
     // Crear el hijo
     const hijo = this.hijoRepository.create({
       nombre: registerHijoDto.nombre,
       apellido: registerHijoDto.apellido,
-      email: registerHijoDto.email,
+      email: emailTemporal,
       password: hashedPassword,
       telefono: registerHijoDto.telefono,
       ultimaconexion: new Date(),
@@ -245,5 +246,18 @@ export class TutorService {
       code += chars.charAt(Math.floor(Math.random() * chars.length));
     }
     return code;
+  }
+
+  /**
+   * Genera un password aleatorio temporal de 16 caracteres
+   * Este password NO será usado por el hijo (solo usará el código)
+   */
+  private generateRandomPassword(): string {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+    let password = '';
+    for (let i = 0; i < 16; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return password;
   }
 }
