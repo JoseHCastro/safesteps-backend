@@ -64,7 +64,8 @@ export class NotificationsService {
 
     const queryBuilder = this.notificationRepository
       .createQueryBuilder('notification')
-      .where('notification.tutor.id = :tutorId', { tutorId })
+      .leftJoinAndSelect('notification.tutor', 'tutor')
+      .where('tutor.id = :tutorId', { tutorId })
       .orderBy('notification.createdAt', 'DESC')
       .take(limit)
       .skip(offset);
@@ -81,12 +82,11 @@ export class NotificationsService {
     const [notifications, total] = await queryBuilder.getManyAndCount();
 
     // Obtener conteo de no leídas
-    const unreadCount = await this.notificationRepository.count({
-      where: {
-        tutor: { id: tutorId },
-        leida: false,
-      },
-    });
+    const unreadCount = await this.notificationRepository
+      .createQueryBuilder('notification')
+      .where('notification.tutorId = :tutorId', { tutorId })
+      .andWhere('notification.leida = :leida', { leida: false })
+      .getCount();
 
     return {
       notifications,
@@ -99,9 +99,12 @@ export class NotificationsService {
    * Obtener una notificación específica
    */
   async findOne(id: number, tutorId: number): Promise<Notification> {
-    const notification = await this.notificationRepository.findOne({
-      where: { id, tutor: { id: tutorId } },
-    });
+    const notification = await this.notificationRepository
+      .createQueryBuilder('notification')
+      .leftJoinAndSelect('notification.tutor', 'tutor')
+      .where('notification.id = :id', { id })
+      .andWhere('notification.tutorId = :tutorId', { tutorId })
+      .getOne();
 
     if (!notification) {
       throw new NotFoundException(`Notificación con ID ${id} no encontrada`);
@@ -124,12 +127,12 @@ export class NotificationsService {
     }
 
     // Verificar que todas las notificaciones pertenecen al tutor
-    const notifications = await this.notificationRepository.find({
-      where: {
-        id: In(notificationIds),
-        tutor: { id: tutorId },
-      },
-    });
+    const notifications = await this.notificationRepository
+      .createQueryBuilder('notification')
+      .leftJoinAndSelect('notification.tutor', 'tutor')
+      .where('notification.id IN (:...notificationIds)', { notificationIds })
+      .andWhere('tutor.id = :tutorId', { tutorId })
+      .getMany();
 
     if (notifications.length !== notificationIds.length) {
       throw new ForbiddenException(
@@ -137,16 +140,14 @@ export class NotificationsService {
       );
     }
 
-    const result = await this.notificationRepository.update(
-      {
-        id: In(notificationIds),
-        tutor: { id: tutorId },
-        leida: false,
-      },
-      {
-        leida: true,
-      },
-    );
+    const result = await this.notificationRepository
+      .createQueryBuilder()
+      .update(Notification)
+      .set({ leida: true })
+      .where('id IN (:...notificationIds)', { notificationIds })
+      .andWhere('tutorId = :tutorId', { tutorId })
+      .andWhere('leida = :leida', { leida: false })
+      .execute();
 
     return { updated: result.affected || 0 };
   }
@@ -155,15 +156,13 @@ export class NotificationsService {
    * Marcar todas las notificaciones como leídas
    */
   async markAllAsRead(tutorId: number): Promise<{ updated: number }> {
-    const result = await this.notificationRepository.update(
-      {
-        tutor: { id: tutorId },
-        leida: false,
-      },
-      {
-        leida: true,
-      },
-    );
+    const result = await this.notificationRepository
+      .createQueryBuilder()
+      .update(Notification)
+      .set({ leida: true })
+      .where('tutorId = :tutorId', { tutorId })
+      .andWhere('leida = :leida', { leida: false })
+      .execute();
 
     return { updated: result.affected || 0 };
   }
@@ -190,12 +189,11 @@ export class NotificationsService {
     }
 
     // Verificar que todas las notificaciones pertenecen al tutor
-    const notifications = await this.notificationRepository.find({
-      where: {
-        id: In(notificationIds),
-        tutor: { id: tutorId },
-      },
-    });
+    const notifications = await this.notificationRepository
+      .createQueryBuilder('notification')
+      .where('notification.id IN (:...notificationIds)', { notificationIds })
+      .andWhere('notification.tutorId = :tutorId', { tutorId })
+      .getMany();
 
     if (notifications.length === 0) {
       return { deleted: 0 };
@@ -216,12 +214,11 @@ export class NotificationsService {
    * Obtener el conteo de notificaciones no leídas
    */
   async getUnreadCount(tutorId: number): Promise<{ count: number }> {
-    const count = await this.notificationRepository.count({
-      where: {
-        tutor: { id: tutorId },
-        leida: false,
-      },
-    });
+    const count = await this.notificationRepository
+      .createQueryBuilder('notification')
+      .where('notification.tutorId = :tutorId', { tutorId })
+      .andWhere('notification.leida = :leida', { leida: false })
+      .getCount();
 
     return { count };
   }

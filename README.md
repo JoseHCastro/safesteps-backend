@@ -294,6 +294,7 @@ await http.post(
 ### 11. 📚 Documentación adicional
 
 #### Documentación del Backend:
+
 - **NOTIFICACIONES_EXPLICACION.md** - Arquitectura detallada del sistema de notificaciones
 - **CODIGO_IMPLEMENTACION_ZONAS.md** - Código de implementación del geofencing
 - **RESUMEN_NOTIFICACIONES.md** - Resumen ejecutivo con diagramas
@@ -302,6 +303,7 @@ await http.post(
 - **src/config/README.md** - Instrucciones para configurar Firebase
 
 #### Guías de Integración Flutter (guides/flutter/):
+
 - **README.txt** - 📘 Guía completa de integración Flutter (EMPIEZA AQUÍ)
 - **notifications/SISTEMA_AUTOMATICO.txt** - ⭐ Sistema automático de notificaciones
 - **notifications/servicio_completo.txt** - ⭐ Código production-ready del servicio

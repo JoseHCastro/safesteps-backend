@@ -22,6 +22,9 @@ export class Notification {
   @Column({ type: 'boolean', default: false })
   leida: boolean;
 
+  @Column({ name: 'tutor_id' })
+  tutorId: number;
+
   @ManyToOne(() => Tutor, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'tutor_id' })
   tutor: Tutor;
