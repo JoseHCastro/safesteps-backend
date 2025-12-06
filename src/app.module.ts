@@ -14,6 +14,7 @@ import { ZonasSegurasModule } from './zonas-seguras/zonas-seguras.module';
 import { ZonaSegura } from './zonas-seguras/entities/zona-segura.entity';
 import { RegistrosModule } from './registros/registros.module';
 import { Registro } from './registros/entities/registro.entity';
+import { UbicacionModule } from './ubicacion/ubicacion.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { Registro } from './registros/entities/registro.entity';
     NotificationsModule,
     ZonasSegurasModule,
     RegistrosModule,
+    UbicacionModule,
   ],
   controllers: [AppController],
   providers: [AppService],
