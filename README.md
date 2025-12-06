@@ -304,16 +304,28 @@ await http.post(
 
 #### Guías de Integración Flutter (guides/flutter/):
 
+**🚨 ACTUALIZACIÓN CRÍTICA (6 Dic 2025 - 8:45 AM):**
+- ✅ **3 BUGFIXES CRÍTICOS APLICADOS** - Sistema de notificaciones funcionando al 100%
+- ✅ BUGFIX #3: tutorId ya NO es null en SQL (user.sub → user.id)
+- ✅ GET /notifications ya NO devuelve array vacío
+- ✅ POST /mark-all-read ya NO crashea con 500
+- ✅ POST /mark-read ahora marca correctamente como leída
+- 📖 **LEE PRIMERO:** `guides/flutter/notifications/ACCION_REQUERIDA.txt`
+
+**Guías Principales:**
 - **README.txt** - 📘 Guía completa de integración Flutter (EMPIEZA AQUÍ)
+- **notifications/ACCION_REQUERIDA.txt** - 🚨 Bugfixes críticos y checklist rápido
+- **notifications/CHANGELOG_DICIEMBRE_2025.txt** - 📋 Detalles técnicos de los 3 bugfixes
 - **notifications/SISTEMA_AUTOMATICO.txt** - ⭐ Sistema automático de notificaciones
 - **notifications/servicio_completo.txt** - ⭐ Código production-ready del servicio
+- **notifications/FLUJO_CORRECTO_LECTURA.txt** - 💡 Cómo marcar como leída correctamente
 - **hijos/update_location_automatico.txt** - ⭐ Tracking automático de ubicación
 - **auth/** - Autenticación y FCM tokens
 - **tutores/** - Gestión de tutores
 - **zonas-seguras/** - Creación de zonas con polígonos
 - **registros/** - Historial de actividades
 
-**🎯 Para desarrolladores Flutter:** Lee primero `guides/flutter/README.txt` para entender todo el sistema.
+**🎯 Para desarrolladores Flutter:** Lee primero `guides/flutter/notifications/ACCION_REQUERIDA.txt` si tienes problemas con notificaciones, o `guides/flutter/README.txt` para visión general del sistema.
 
 ### 12. Notas importantes
 
