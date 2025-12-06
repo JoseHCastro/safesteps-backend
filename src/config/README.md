@@ -14,6 +14,7 @@
    - **IMPORTANTE:** Este archivo contiene credenciales privadas y NO debe ser compartido ni subido al repositorio
 
 3. **Estructura esperada del archivo:**
+
 ```json
 {
   "type": "service_account",
@@ -32,11 +33,13 @@
 ## Verificación
 
 Cuando inicies el backend, deberías ver este mensaje en los logs:
+
 ```
 ✅ Firebase Admin SDK initialized successfully
 ```
 
 Si no ves este mensaje, verifica que:
+
 - El archivo `service-account.json` existe en `src/config/`
 - El archivo tiene el formato JSON correcto
 - Los permisos del archivo permiten lectura
@@ -44,5 +47,6 @@ Si no ves este mensaje, verifica que:
 ## Seguridad
 
 ⚠️ **NUNCA** compartas este archivo públicamente ni lo subas a GitHub
+
 - El archivo está protegido en `.gitignore`
 - Si el archivo se filtra, revoca las credenciales desde Firebase Console inmediatamente
