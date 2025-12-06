@@ -37,6 +37,11 @@ services:
       WATCHPACK_POLLING: "true"
     ports:
       - "3000:3000"
+    volumes:
+      - ./src:/usr/src/app/src
+      - ./package.json:/usr/src/app/package.json
+      - ./tsconfig.json:/usr/src/app/tsconfig.json
+      - ./nest-cli.json:/usr/src/app/nest-cli.json
     depends_on:
       postgis:
         condition: service_healthy

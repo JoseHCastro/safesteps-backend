@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ConflictException, BadRequestException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, BadRequestException, UnauthorizedException, Inject, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
@@ -7,6 +7,8 @@ import { CreateHijoDto } from './dto/create-hijo.dto';
 import { UpdateHijoDto } from './dto/update-hijo.dto';
 import { UpdateLocationDto } from './dto/update-location.dto';
 import { User } from '../auth/entities/user.entity';
+import { ZonasSegurasService } from '../zonas-seguras/zonas-seguras.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class HijoService {
@@ -15,6 +17,10 @@ export class HijoService {
     private hijoRepository: Repository<Hijo>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    @Inject(forwardRef(() => ZonasSegurasService))
+    private zonasService: ZonasSegurasService,
+    @Inject(forwardRef(() => NotificationsService))
+    private notificationsService: NotificationsService,
   ) {}
 
   async create(createHijoDto: CreateHijoDto): Promise<Hijo> {
@@ -125,7 +131,14 @@ export class HijoService {
   }
 
   async updateLocation(id: number, updateLocationDto: UpdateLocationDto): Promise<Hijo> {
-    const hijo = await this.findOne(id);
+    const hijo = await this.hijoRepository.findOne({
+      where: { id },
+      relations: ['tutores'],
+    });
+
+    if (!hijo) {
+      throw new NotFoundException(`Hijo con ID ${id} no encontrado`);
+    }
 
     // Validar coordenadas
     if (updateLocationDto.latitud < -90 || updateLocationDto.latitud > 90) {
@@ -136,15 +149,56 @@ export class HijoService {
       throw new BadRequestException('La longitud debe estar entre -180 y 180');
     }
 
+    // Guardar ubicación
     hijo.latitud = updateLocationDto.latitud;
     hijo.longitud = updateLocationDto.longitud;
     hijo.ultimaconexion = new Date();
 
     try {
-      return await this.hijoRepository.save(hijo);
+      await this.hijoRepository.save(hijo);
     } catch (error) {
       throw new BadRequestException('Error al actualizar la ubicación');
     }
+
+    // 🔥 NUEVO: Verificar zonas seguras
+    try {
+      const zonasActuales = await this.zonasService.checkGeofenceStatus(
+        id,
+        updateLocationDto.latitud,
+        updateLocationDto.longitud,
+      );
+
+      // 🔥 Si está dentro de alguna zona, notificar al tutor
+      for (const zona of zonasActuales) {
+        if (zona.tutor) {
+          const mensaje = `✅ ${hijo.nombre} ${hijo.apellido} está dentro de la zona segura "${zona.nombre}"`;
+          
+          // Guardar notificación en BD
+          await this.notificationsService.create(zona.tutor.id, {
+            mensaje,
+            tipo: 'zona_segura',
+          });
+
+          // 📱 Enviar Push Notification
+          await this.notificationsService.sendPushNotification(
+            zona.tutor.id,
+            '✅ Zona Segura',
+            `${hijo.nombre} está en ${zona.nombre}`,
+            {
+              type: 'zona_segura',
+              childId: hijo.id,
+              zonaId: zona.id,
+              zonaName: zona.nombre,
+            },
+          );
+        }
+      }
+    } catch (error) {
+      // No fallar si hay error en notificaciones, solo registrar
+      console.error('Error verificando zonas seguras:', error);
+    }
+
+    return hijo;
   }
 
   async remove(id: number): Promise<void> {

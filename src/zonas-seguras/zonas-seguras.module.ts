@@ -9,5 +9,6 @@ import { Hijo } from '../usuarios/entities/hijo.entity';
   imports: [TypeOrmModule.forFeature([ZonaSegura, Hijo])],
   controllers: [ZonasSegurasController],
   providers: [ZonasSegurasService],
+  exports: [ZonasSegurasService],
 })
 export class ZonasSegurasModule {}
