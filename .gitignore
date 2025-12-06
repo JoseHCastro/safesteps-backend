@@ -61,3 +61,26 @@ guides/
 # Documentation files
 *.md
 !README.md
+
+# Firebase service account (sensitive)
+src/config/service-account.json
+src/config/*.json
+!src/config/.gitkeep
+
+# Any credentials or private keys
+*.pem
+*.key
+*.cert
+*.crt
+*-key.json
+*credentials*.json
+service-account*.json
+
+# Database files
+*.sqlite
+*.sqlite3
+*.db
+
+# Docker volumes data (if any)
+data/
+volumes/

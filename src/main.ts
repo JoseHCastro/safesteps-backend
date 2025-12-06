@@ -13,6 +13,9 @@ async function bootstrap() {
     admin.initializeApp({
       credential: admin.credential.cert('./src/config/service-account.json'),
     });
+    console.log('✅ Firebase Admin SDK initialized successfully');
+  } else {
+    console.warn('⚠️ Firebase service-account.json not found - push notifications will not work');
   }
   
   app.useGlobalFilters(new AllExceptionsFilter());
