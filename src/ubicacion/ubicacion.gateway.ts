@@ -61,12 +61,18 @@ export class UbicacionGateway implements OnGatewayConnection, OnGatewayDisconnec
             if (payload.tipo === 'hijo') {
                 const room = `hijo_${payload.sub}`;
                 client.join(room);
-                console.log(`👶 Hijo ${payload.sub} unido automáticamente a sala ${room}`);
+                
+                // Obtener device del handshake si está disponible
+                const device = client.handshake.query?.device as string || 'Unknown';
+                client.data.device = device;
+                
+                console.log(`👶 Hijo ${payload.sub} unido automáticamente a sala ${room} (${device})`);
                 
                 // Notificar a los tutores que el hijo está online
                 this.server.to(room).emit('childStatusChanged', {
                     childId: payload.sub,
                     online: true,
+                    device: device,
                     timestamp: new Date().toISOString(),
                 });
             }
@@ -78,16 +84,18 @@ export class UbicacionGateway implements OnGatewayConnection, OnGatewayDisconnec
 
     handleDisconnect(client: Socket) {
         const user = client.data.user;
+        const device = client.data.device || 'Unknown';
         console.log(`🔌 Cliente desconectado: ${client.id}`);
         
         // Si era un hijo, notificar a los tutores que está offline
         if (user && user.tipo === 'hijo') {
             const room = `hijo_${user.sub}`;
-            console.log(`👶 Hijo ${user.sub} desconectado, notificando a sala ${room}`);
+            console.log(`👶 Hijo ${user.sub} desconectado, notificando a sala ${room} (${device})`);
             
             this.server.to(room).emit('childStatusChanged', {
                 childId: user.sub,
                 online: false,
+                device: device,
                 timestamp: new Date().toISOString(),
             });
         }
@@ -120,7 +128,7 @@ export class UbicacionGateway implements OnGatewayConnection, OnGatewayDisconnec
     @SubscribeMessage('updateLocation')
     async handleUpdateLocation(
         @ConnectedSocket() client: Socket,
-        @MessageBody() data: { lat: number; lng: number; battery: number; status: string }
+        @MessageBody() data: { lat: number; lng: number; battery: number; status: string; device?: string }
     ) {
         const user = client.data.user;
         
@@ -142,10 +150,11 @@ export class UbicacionGateway implements OnGatewayConnection, OnGatewayDisconnec
             lng: data.lng,
             battery: data.battery,
             status: data.status,
+            device: data.device || 'Unknown', // Dispositivo del hijo
             timestamp: new Date().toISOString(),
         });
         
-        console.log(`📍 Ubicación actualizada para hijo ${childId}: ${data.lat}, ${data.lng}`);
+        console.log(`📍 Ubicación actualizada para hijo ${childId}: ${data.lat}, ${data.lng} (${data.device || 'Unknown'})`);
 
         // Persistir en base de datos
         try {
