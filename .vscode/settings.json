@@ -1,0 +1,29 @@
+{
+  "files.associations": {
+    "*.sql": "sql",
+    "src/migrations/*.sql": "postgres"
+  },
+  "mssql.enableSqlAuthenticationProvider": false,
+  "[sql]": {
+    "editor.defaultFormatter": "ms-ossdata.vscode-postgresql"
+  },
+  "sqltools.useNodeRuntime": true,
+  "sqltools.connections": [
+    {
+      "previewLimit": 50,
+      "driver": "PostgreSQL",
+      "name": "SafeSteps PostgreSQL",
+      "database": "safesteps",
+      "username": "postgres",
+      "password": "123",
+      "port": 5433,
+      "server": "localhost"
+    }
+  ],
+  "files.exclude": {
+    "**/.git": true,
+    "**/.DS_Store": true,
+    "**/node_modules": true,
+    "**/dist": true
+  }
+}

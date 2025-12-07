@@ -26,6 +26,12 @@ export class Hijo extends User {
   @Column({ type: 'boolean', default: false })
   vinculado: boolean;
 
+  @Column({ type: 'varchar', length: 10, default: 'FUERA' })
+  estadoZona: 'DENTRO' | 'FUERA';
+
+  @Column({ type: 'int', nullable: true })
+  zonaActualId: number;
+
   @ManyToMany(() => ZonaSegura, (zona) => zona.hijos)
   zonasSeguras: ZonaSegura[];
 

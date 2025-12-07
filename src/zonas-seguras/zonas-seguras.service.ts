@@ -88,4 +88,14 @@ export class ZonasSegurasService {
 
     return zonasActuales;
   }
+
+  /**
+   * Buscar zona por ID (necesario para notificaciones de salida)
+   */
+  async findById(id: number): Promise<ZonaSegura | null> {
+    return this.zonaSeguraRepository.findOne({
+      where: { id },
+      relations: ['tutor'],
+    });
+  }
 }

@@ -129,10 +129,35 @@ export class HijoService {
       throw new BadRequestException('La longitud debe estar entre -180 y 180');
     }
 
-    // Guardar ubicación
+    // 📍 Paso 1: Guardar estado anterior
+    const estadoAnterior = hijo.estadoZona || 'FUERA';
+    const zonaAnteriorId = hijo.zonaActualId;
+
+    // 📍 Paso 2: Actualizar ubicación
     hijo.latitud = updateLocationDto.latitud;
     hijo.longitud = updateLocationDto.longitud;
     hijo.ultimaconexion = new Date();
+
+    // 📍 Paso 3: Verificar zonas seguras con PostGIS (ST_Contains)
+    let zonasActuales: any[] = [];
+    try {
+      zonasActuales = await this.zonasService.checkGeofenceStatus(
+        id,
+        updateLocationDto.latitud,
+        updateLocationDto.longitud,
+      );
+    } catch (error) {
+      console.error('❌ Error verificando zonas con PostGIS:', error);
+    }
+
+    // 📍 Paso 4: Determinar nuevo estado
+    const estaDentro = zonasActuales.length > 0;
+    const estadoNuevo = estaDentro ? 'DENTRO' : 'FUERA';
+    const zonaNueva = estaDentro ? zonasActuales[0] : null;
+
+    // 📍 Paso 5: Actualizar estado en BD
+    hijo.estadoZona = estadoNuevo;
+    hijo.zonaActualId = zonaNueva ? zonaNueva.id : null;
 
     try {
       await this.hijoRepository.save(hijo);
@@ -140,42 +165,81 @@ export class HijoService {
       throw new BadRequestException('Error al actualizar la ubicación');
     }
 
-    // 🔥 NUEVO: Verificar zonas seguras
+    // 📍 Paso 6: Detectar cambios de estado y enviar notificaciones
     try {
-      const zonasActuales = await this.zonasService.checkGeofenceStatus(
-        id,
-        updateLocationDto.latitud,
-        updateLocationDto.longitud,
-      );
+      // 🟢 EVENTO: zone_entry (FUERA → DENTRO)
+      if (estadoAnterior === 'FUERA' && estadoNuevo === 'DENTRO' && zonaNueva) {
+        console.log(`🟢 ZONE_ENTRY: ${hijo.nombre} entró a ${zonaNueva.nombre}`);
 
-      // 🔥 Si está dentro de alguna zona, notificar al tutor
-      for (const zona of zonasActuales) {
-        if (zona.tutor) {
-          const mensaje = `✅ ${hijo.nombre} ${hijo.apellido} está dentro de la zona segura "${zona.nombre}"`;
+        if (zonaNueva.tutor) {
+          const mensaje = `🟢 ${hijo.nombre} ${hijo.apellido} entró a la zona segura "${zonaNueva.nombre}"`;
           
-          // Guardar notificación en BD
-          await this.notificationsService.create(zona.tutor.id, {
+          // Guardar en BD
+          await this.notificationsService.create(zonaNueva.tutor.id, {
             mensaje,
-            tipo: 'zona_segura',
+            tipo: 'zone_entry',
           });
 
-          // 📱 Enviar Push Notification
+          // 📱 Enviar Push FCM
           await this.notificationsService.sendPushNotification(
-            zona.tutor.id,
-            '✅ Zona Segura',
-            `${hijo.nombre} está en ${zona.nombre}`,
+            zonaNueva.tutor.id,
+            '🟢 Zona Segura',
+            `${hijo.nombre} entró a ${zonaNueva.nombre}`,
             {
-              type: 'zona_segura',
+              type: 'zone_entry',
               childId: hijo.id,
-              zonaId: zona.id,
-              zonaName: zona.nombre,
+              childName: `${hijo.nombre} ${hijo.apellido}`,
+              zonaId: zonaNueva.id,
+              zonaName: zonaNueva.nombre,
             },
           );
         }
       }
+
+      // 🔴 EVENTO: zone_exit (DENTRO → FUERA)
+      if (estadoAnterior === 'DENTRO' && estadoNuevo === 'FUERA' && zonaAnteriorId) {
+        // Buscar info de la zona anterior
+        const zonaAnterior = await this.zonasService.findById(zonaAnteriorId);
+        
+        if (zonaAnterior) {
+          console.log(`🔴 ZONE_EXIT: ${hijo.nombre} salió de ${zonaAnterior.nombre}`);
+
+          if (zonaAnterior.tutor) {
+            const mensaje = `🔴 ${hijo.nombre} ${hijo.apellido} salió de la zona segura "${zonaAnterior.nombre}"`;
+            
+            // Guardar en BD
+            await this.notificationsService.create(zonaAnterior.tutor.id, {
+              mensaje,
+              tipo: 'zone_exit',
+            });
+
+            // 📱 Enviar Push FCM
+            await this.notificationsService.sendPushNotification(
+              zonaAnterior.tutor.id,
+              '🔴 Alerta de Zona',
+              `${hijo.nombre} salió de ${zonaAnterior.nombre}`,
+              {
+                type: 'zone_exit',
+                childId: hijo.id,
+                childName: `${hijo.nombre} ${hijo.apellido}`,
+                zonaId: zonaAnterior.id,
+                zonaName: zonaAnterior.nombre,
+              },
+            );
+          }
+        }
+      }
+
+      // ℹ️ Log de estado (sin notificación)
+      if (estadoAnterior === estadoNuevo) {
+        if (estadoNuevo === 'DENTRO' && zonaNueva) {
+          console.log(`ℹ️ ${hijo.nombre} continúa DENTRO de ${zonaNueva.nombre}`);
+        } else {
+          console.log(`ℹ️ ${hijo.nombre} continúa FUERA de zonas seguras`);
+        }
+      }
     } catch (error) {
-      // No fallar si hay error en notificaciones, solo registrar
-      console.error('Error verificando zonas seguras:', error);
+      console.error('❌ Error procesando notificaciones de zona:', error);
     }
 
     return hijo;
