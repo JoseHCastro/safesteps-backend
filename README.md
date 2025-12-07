@@ -305,6 +305,7 @@ await http.post(
 #### Guías de Integración Flutter (guides/flutter/):
 
 **🚨 ACTUALIZACIÓN CRÍTICA (6 Dic 2025 - 8:45 AM):**
+
 - ✅ **3 BUGFIXES CRÍTICOS APLICADOS** - Sistema de notificaciones funcionando al 100%
 - ✅ BUGFIX #3: tutorId ya NO es null en SQL (user.sub → user.id)
 - ✅ GET /notifications ya NO devuelve array vacío
@@ -313,6 +314,7 @@ await http.post(
 - 📖 **LEE PRIMERO:** `guides/flutter/notifications/ACCION_REQUERIDA.txt`
 
 **Guías Principales:**
+
 - **README.txt** - 📘 Guía completa de integración Flutter (EMPIEZA AQUÍ)
 - **notifications/ACCION_REQUERIDA.txt** - 🚨 Bugfixes críticos y checklist rápido
 - **notifications/CHANGELOG_DICIEMBRE_2025.txt** - 📋 Detalles técnicos de los 3 bugfixes

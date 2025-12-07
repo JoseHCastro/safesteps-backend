@@ -87,4 +87,13 @@ export class HijoController {
   regenerarCodigo(@Param('id') id: string, @GetUser() user: any) {
     return this.hijoService.regenerarCodigo(+id, user.id);
   }
+
+  /**
+   * Botón SOS - Enviar alerta de pánico a tutores
+   */
+  @Post(':id/sos')
+  @UseGuards(JwtAuthGuard)
+  enviarAlertaSOS(@Param('id') id: string, @GetUser() user: any) {
+    return this.hijoService.enviarAlertaSOS(+id, user.id);
+  }
 }

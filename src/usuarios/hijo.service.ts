@@ -272,4 +272,68 @@ export class HijoService {
 
     return { codigoVinculacion: hijo.codigoVinculacion };
   }
+
+  /**
+   * Enviar alerta SOS de pánico a todos los tutores vinculados
+   */
+  async enviarAlertaSOS(hijoId: number, userId: number): Promise<{ message: string; notificacionesEnviadas: number }> {
+    // Verificar que el usuario sea el hijo
+    const hijo = await this.hijoRepository.findOne({
+      where: { id: hijoId },
+      relations: ['tutores'],
+    });
+
+    if (!hijo) {
+      throw new NotFoundException(`Hijo con ID ${hijoId} no encontrado`);
+    }
+
+    if (hijo.id !== userId) {
+      throw new UnauthorizedException('Solo el hijo puede enviar su propia alerta SOS');
+    }
+
+    if (!hijo.tutores || hijo.tutores.length === 0) {
+      throw new BadRequestException('No tienes tutores vinculados para recibir la alerta');
+    }
+
+    // Preparar mensaje de alerta con ubicación actual
+    const mensajeAlerta = hijo.latitud && hijo.longitud
+      ? `🚨 ¡ALERTA SOS! ${hijo.nombre} ${hijo.apellido} necesita ayuda urgente.\n📍 Ubicación: ${hijo.latitud}, ${hijo.longitud}`
+      : `🚨 ¡ALERTA SOS! ${hijo.nombre} ${hijo.apellido} necesita ayuda urgente.\n⚠️ Ubicación no disponible`;
+
+    let notificacionesEnviadas = 0;
+
+    // Enviar notificación a cada tutor
+    for (const tutor of hijo.tutores) {
+      try {
+        // Crear notificación en base de datos
+        await this.notificationsService.create(tutor.id, {
+          mensaje: mensajeAlerta,
+          tipo: 'sos_panico',
+        });
+
+        // Enviar notificación PUSH con type: 'sos_panico' en data
+        await this.notificationsService.sendPushNotification(
+          tutor.id,
+          '🚨 ALERTA SOS',
+          `${hijo.nombre} necesita ayuda urgente`,
+          {
+            type: 'sos_panico',  // IMPORTANTE: Este campo es el que detecta Flutter
+            childId: hijo.id,
+            childName: `${hijo.nombre} ${hijo.apellido}`,
+            latitude: hijo.latitud?.toString() || '',
+            longitude: hijo.longitud?.toString() || '',
+          },
+        );
+
+        notificacionesEnviadas++;
+      } catch (error) {
+        console.error(`Error al enviar SOS al tutor ${tutor.id}:`, error);
+      }
+    }
+
+    return {
+      message: `Alerta SOS enviada a ${notificacionesEnviadas} tutor(es)`,
+      notificacionesEnviadas,
+    };
+  }
 }
