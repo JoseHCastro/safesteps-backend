@@ -1,4 +1,4 @@
-import { IsDate, IsNumber, IsOptional, IsArray, ValidateNested } from 'class-validator';
+import { IsDate, IsNumber, IsOptional, IsArray, ValidateNested, IsBoolean } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class UpdateRegistroDto {
@@ -14,6 +14,10 @@ export class UpdateRegistroDto {
   @IsNumber()
   @IsOptional()
   longitud?: number;
+
+  @IsBoolean()
+  @IsOptional()
+  fueOffline?: boolean;
 }
 
 export class SyncRegistrosBatchDto {

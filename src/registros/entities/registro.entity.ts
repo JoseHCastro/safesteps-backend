@@ -22,6 +22,12 @@ export class Registro {
   @Column({ name: 'hijoId' })
   hijoId: number;
 
+  @Column('boolean', { 
+    name: 'fueOffline',
+    default: false 
+  })
+  fueOffline: boolean;
+
   @Column('timestamp', { 
     name: 'creadoEn',
     default: () => 'CURRENT_TIMESTAMP' 

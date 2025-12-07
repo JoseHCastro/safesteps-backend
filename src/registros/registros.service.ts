@@ -29,7 +29,8 @@ export class RegistrosService {
       hora: createRegistroDto.hora,
       latitud: createRegistroDto.latitud,
       longitud: createRegistroDto.longitud,
-      hijoId: createRegistroDto.hijoId
+      hijoId: createRegistroDto.hijoId,
+      fueOffline: createRegistroDto.fueOffline ?? false, // ← Usar valor del DTO
     });
 
     return await this.registrosRepository.save(registro);
@@ -51,7 +52,8 @@ export class RegistrosService {
         hora: registroDto.hora,
         latitud: registroDto.latitud,
         longitud: registroDto.longitud,
-        hijoId: hijoId
+        hijoId: hijoId,
+        fueOffline: registroDto.fueOffline ?? false, // ← Usar valor del DTO
       });
 
       registros.push(registro);
@@ -66,6 +68,7 @@ export class RegistrosService {
     if (updateRegistroDto.hora) registro.hora = updateRegistroDto.hora;
     if (updateRegistroDto.latitud) registro.latitud = updateRegistroDto.latitud;
     if (updateRegistroDto.longitud) registro.longitud = updateRegistroDto.longitud;
+    if (updateRegistroDto.fueOffline !== undefined) registro.fueOffline = updateRegistroDto.fueOffline;
 
     return await this.registrosRepository.save(registro);
   }

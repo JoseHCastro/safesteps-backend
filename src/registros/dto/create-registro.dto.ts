@@ -1,4 +1,4 @@
-import { IsDate, IsNumber, IsInt } from 'class-validator';
+import { IsDate, IsNumber, IsInt, IsBoolean, IsOptional } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateRegistroDto {
@@ -14,4 +14,8 @@ export class CreateRegistroDto {
 
   @IsInt()
   hijoId: number;
+
+  @IsBoolean()
+  @IsOptional()
+  fueOffline?: boolean;
 }
