@@ -249,6 +249,12 @@ export class NotificationsService {
     body: string,
     data: { type: string; childId?: number; [key: string]: any },
   ): Promise<void> {
+    // Verificar si Firebase está inicializado
+    if (admin.apps.length === 0) {
+      console.warn('⚠️ Firebase not initialized - skipping push notification');
+      return;
+    }
+
     const tutor = await this.tutorRepository.findOne({
       where: { id: userId },
     });

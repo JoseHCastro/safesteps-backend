@@ -13,8 +13,14 @@ async function bootstrap() {
     const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
     const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
 
+    // Log para debug (sin mostrar valores sensibles)
+    console.log('🔧 Firebase Config Check:');
+    console.log(`   - FIREBASE_PROJECT_ID: ${projectId ? '✓ Set' : '✗ Missing'}`);
+    console.log(`   - FIREBASE_PRIVATE_KEY: ${privateKey ? '✓ Set (' + privateKey.substring(0, 30) + '...)' : '✗ Missing'}`);
+    console.log(`   - FIREBASE_CLIENT_EMAIL: ${clientEmail ? '✓ Set' : '✗ Missing'}`);
+
     if (!projectId || !privateKey || !clientEmail) {
-      console.warn('⚠️ Firebase credentials not found in .env - push notifications will not work');
+      console.warn('⚠️ Firebase credentials not found in environment - push notifications will not work');
       console.warn('   Required: FIREBASE_PROJECT_ID, FIREBASE_PRIVATE_KEY, FIREBASE_CLIENT_EMAIL');
     } else {
       admin.initializeApp({
