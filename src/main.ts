@@ -7,22 +7,25 @@ import * as admin from 'firebase-admin';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   
-  // Inicializar Firebase Admin SDK desde variable de entorno
+  // Inicializar Firebase Admin SDK desde variables de entorno individuales
   try {
-    const serviceAccountBase64 = process.env.FIREBASE_SERVICE_ACCOUNT_BASE64;
-    
-    if (!serviceAccountBase64) {
-      console.warn('⚠️ FIREBASE_SERVICE_ACCOUNT_BASE64 not found in .env - push notifications will not work');
+    const projectId = process.env.FIREBASE_PROJECT_ID;
+    const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
+    const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+
+    if (!projectId || !privateKey || !clientEmail) {
+      console.warn('⚠️ Firebase credentials not found in .env - push notifications will not work');
+      console.warn('   Required: FIREBASE_PROJECT_ID, FIREBASE_PRIVATE_KEY, FIREBASE_CLIENT_EMAIL');
     } else {
-      // Decodificar el Base64 y parsear el JSON
-      const serviceAccountJson = Buffer.from(serviceAccountBase64, 'base64').toString('utf-8');
-      const serviceAccount = JSON.parse(serviceAccountJson);
-      
       admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
+        credential: admin.credential.cert({
+          projectId,
+          privateKey,
+          clientEmail,
+        }),
       });
       
-      console.log('✅ Firebase Admin SDK initialized successfully from environment variable');
+      console.log('✅ Firebase Admin SDK initialized successfully');
     }
   } catch (error) {
     console.error('❌ Error initializing Firebase Admin SDK:', error.message);
