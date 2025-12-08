@@ -16,8 +16,11 @@ import { Hijo } from '../usuarios/entities/hijo.entity';
 
 @WebSocketGateway({
     cors: {
-        origin: '*',
+        origin: '*', // Permite conexiones WebSocket desde cualquier origen
+        methods: ['GET', 'POST'],
+        credentials: true,
     },
+    transports: ['websocket', 'polling'], // Soporta ambos transportes
 })
 export class UbicacionGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @WebSocketServer() server: Server;

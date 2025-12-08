@@ -7,6 +7,33 @@ import * as admin from 'firebase-admin';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   
+  // ===== CONFIGURACIÓN CORS COMPLETA =====
+  // Permite conexiones desde cualquier origen (frontend desplegado en cualquier lugar)
+  const corsOrigins = process.env.CORS_ORIGINS 
+    ? process.env.CORS_ORIGINS.split(',').map(origin => origin.trim())
+    : '*'; // Por defecto permite todos los orígenes
+
+  app.enableCors({
+    origin: corsOrigins, // Orígenes permitidos (string, array, o '*')
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], // Métodos HTTP permitidos
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'Accept',
+      'Origin',
+      'X-Requested-With',
+      'Access-Control-Allow-Origin',
+      'Access-Control-Allow-Headers',
+      'Access-Control-Allow-Methods',
+    ],
+    credentials: true, // Permite enviar cookies/tokens de autenticación
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
+  });
+
+  console.log('🌐 CORS configurado para orígenes:', corsOrigins === '*' ? 'TODOS (*)' : corsOrigins);
+  // ========================================
+  
   // Inicializar Firebase Admin SDK desde variables de entorno individuales
   try {
     const projectId = process.env.FIREBASE_PROJECT_ID;
@@ -49,8 +76,10 @@ async function bootstrap() {
     }),
   );
 
-  app.enableCors();
+  // CORS ya configurado arriba con opciones completas
 
-  await app.listen(process.env.PORT ?? 3000);
+  const port = process.env.PORT ?? 3000;
+  await app.listen(port);
+  console.log(`🚀 SafeSteps Backend corriendo en puerto ${port}`);
 }
 bootstrap();
